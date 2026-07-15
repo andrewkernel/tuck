@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TabShelf demo</title>
+    <style>
+      :root {
+        --bg: #11110f;
+        --surface: #1a1a16;
+        --surface-2: #21211c;
+        --border: #39382f;
+        --text: #f1f0e8;
+        --muted: #aaa79a;
+        --accent: #c8b66a;
+        --focus: #d7c982;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Aptos", "Helvetica Neue", sans-serif;
+      }
+      .stage {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        background: linear-gradient(145deg, #11110f 0%, #171711 100%);
+      }
+      .chrome {
+        position: absolute;
+        left: 60px;
+        top: 76px;
+        width: 1160px;
+        height: 568px;
+        border: 1px solid #4b493d;
+        background: #171714;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+        overflow: hidden;
+      }
+      .tabstrip {
+        height: 44px;
+        display: flex;
+        align-items: end;
+        gap: 2px;
+        padding: 7px 10px 0;
+        border-bottom: 1px solid var(--border);
+        background: #20201b;
+      }
+      .browser-tab,
+      .group-chip {
+        height: 36px;
+        max-width: 170px;
+        padding: 9px 12px;
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-bottom: 0;
+        border-radius: 7px 7px 0 0;
+        color: #d4d1c4;
+        font-size: 12px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .browser-tab.active {
+        border-color: #4b493d;
+        background: #171714;
+        color: var(--text);
+      }
+      .browser-tab.canvas {
+        animation: vanish 1s ease 3.7s forwards;
+      }
+      .canvas-stack {
+        display: contents;
+      }
+      .group-chip {
+        position: absolute;
+        top: 7px;
+        left: 10px;
+        width: 196px;
+        max-width: none;
+        border-color: #747055;
+        background: #29291f;
+        color: #eee7bd;
+        opacity: 0;
+        animation: group-in 0.6s ease 4.15s forwards;
+      }
+      .group-chip span {
+        color: #bdb58b;
+      }
+      .address {
+        height: 38px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+        color: #c7c3b4;
+        background: #1b1b17;
+        font-size: 12px;
+      }
+      .address div {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #3c3b32;
+        border-radius: 5px;
+        background: #151512;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: 752px 408px;
+        height: 486px;
+      }
+      .page {
+        position: relative;
+        padding: 44px 42px;
+        background: #f7f5ee;
+        color: #282720;
+      }
+      .page h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        font-weight: 650;
+      }
+      .page p {
+        width: 510px;
+        margin: 0 0 18px;
+        color: #5f5b50;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .assignment {
+        width: 430px;
+        padding: 15px;
+        border: 1px solid #ded9cb;
+        border-radius: 6px;
+        background: #fffdfa;
+      }
+      .assignment strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+      .assignment span {
+        display: block;
+        margin: 5px 0;
+        color: #645f52;
+        font-size: 13px;
+      }
+      .panel {
+        display: grid;
+        grid-template-rows: 52px 42px 1fr 38px;
+        border-left: 1px solid var(--border);
+        background: #171714;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 11px 0 15px;
+        border-bottom: 1px solid var(--border);
+        background: #1d1d19;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 650;
+        font-size: 15px;
+      }
+      .mark {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--accent);
+        position: relative;
+      }
+      .mark:after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        right: 3px;
+        top: 7px;
+        border-top: 1px solid var(--accent);
+      }
+      .actions {
+        display: flex;
+        gap: 5px;
+      }
+      .button {
+        min-height: 28px;
+        padding: 4px 8px;
+        border: 1px solid #575545;
+        border-radius: 6px;
+        color: var(--text);
+        background: transparent;
+        font-size: 11px;
+      }
+      .button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #191811;
+        font-weight: 650;
+      }
+      .tabs {
+        display: flex;
+        align-items: end;
+        gap: 20px;
+        padding: 0 15px;
+        border-bottom: 1px solid var(--border);
+      }
+      .tabs span {
+        height: 42px;
+        padding-top: 14px;
+        border-bottom: 2px solid transparent;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .tabs span.active {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+      .panel-content {
+        overflow: hidden;
+      }
+      .section {
+        border-bottom: 1px solid var(--border);
+      }
+      .heading {
+        padding: 12px 15px 6px;
+        font-weight: 650;
+        font-size: 12px;
+      }
+      .domain {
+        padding: 0 15px 8px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 7px;
+        align-items: center;
+        min-height: 47px;
+        padding: 8px 10px 8px 15px;
+        border-top: 1px solid var(--border);
+      }
+      .title {
+        overflow: hidden;
+        color: var(--text);
+        font-size: 12px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .meta {
+        margin-top: 2px;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 10px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .copy {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px 0 15px;
+        color: var(--muted);
+        background: #1d1d19;
+        font-size: 10px;
+      }
+      .group-message {
+        position: absolute;
+        right: 18px;
+        top: 82px;
+        padding: 8px 10px;
+        border: 1px solid #706a48;
+        border-radius: 6px;
+        color: #eee7bd;
+        background: #29291f;
+        font-size: 11px;
+        opacity: 0;
+        animation: toast 3.5s ease 4.3s forwards;
+      }
+      .caption {
+        position: absolute;
+        left: 76px;
+        bottom: 14px;
+        width: 520px;
+        font-size: 25px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        opacity: 0;
+      }
+      .caption small {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0;
+      }
+      .caption.one {
+        animation: caption 3.3s ease 0s forwards;
+      }
+      .caption.two {
+        animation: caption 3.3s ease 4s forwards;
+      }
+      .caption.three {
+        animation: caption 3.3s ease 8s forwards;
+      }
+      .caption.four {
+        animation: caption 4.4s ease 12s forwards;
+      }
+      .end-card {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #171714;
+        opacity: 0;
+        animation: end 1s ease 15.2s forwards;
+      }
+      .end-card div {
+        text-align: center;
+      }
+      .end-card .lockup {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        font-size: 32px;
+        font-weight: 650;
+      }
+      .end-card p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .end-card .tag {
+        color: var(--accent);
+      }
+      @keyframes vanish {
+        to {
+          opacity: 0;
+          width: 0;
+          padding-left: 0;
+          padding-right: 0;
+          border-width: 0;
+        }
+      }
+      @keyframes group-in {
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes toast {
+        0%,
+        100% {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        12%,
+        82% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes caption {
+        0%,
+        100% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        12%,
+        82% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes end {
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage" aria-label="TabShelf product demonstration">
+      <div class="chrome">
+        <div class="tabstrip">
+          <div class="canvas-stack">
+            <div class="browser-tab canvas active">Canvas · Assignment</div>
+            <div class="browser-tab canvas">Canvas · Calendar</div>
+            <div class="browser-tab canvas">Canvas · Grades</div>
+            <div class="browser-tab canvas">Canvas · Inbox</div>
+          </div>
+          <div class="group-chip">Tuck <span>· 4 Canvas tabs</span></div>
+          <div class="browser-tab">GitHub · TabShelf</div>
+          <div class="browser-tab">LinkedIn</div>
+        </div>
+        <div class="address"><div>canvas.example.edu/courses/eng-201</div></div>
+        <div class="workspace">
+          <section class="page">
+            <h1>Engineering 201</h1>
+            <p>
+              Assignment workspace for the current course. Keep useful instructions visible while
+              you browse.
+            </p>
+            <div class="assignment">
+              <strong>Project brief</strong><span>Due Friday · 11:59 PM</span
+              ><span>Submit a concise implementation plan and demo.</span>
+            </div>
+          </section>
+          <aside class="panel">
+            <header class="toolbar">
+              <div class="brand"><span class="mark"></span>TabShelf</div>
+              <div class="actions">
+                <button class="button">Group tabs</button
+                ><button class="button primary">Clean now</button>
+              </div>
+            </header>
+            <nav class="tabs">
+              <span class="active">Tabs</span><span>Notes</span><span>Settings</span>
+            </nav>
+            <div class="panel-content">
+              <section class="section">
+                <div class="heading">Current site</div>
+                <div class="domain">canvas.example.edu</div>
+                <div class="row">
+                  <div>
+                    <div class="title">Assignment rubric</div>
+                    <div class="meta">Keep the final demo under 90 seconds.</div>
+                  </div>
+                  <span class="copy">Copy</span>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="title">Submission link</div>
+                    <div class="meta">https://canvas.example.edu/submit</div>
+                  </div>
+                  <span class="copy">Open</span>
+                </div>
+              </section>
+              <section class="section">
+                <div class="heading">Open tabs</div>
+                <div class="row">
+                  <div>
+                    <div class="title">GitHub · TabShelf</div>
+                    <div class="meta">github.com · unused 5h</div>
+                  </div>
+                  <span class="copy">Archive</span>
+                </div>
+                <div class="row">
+                  <div>
+                    <div class="title">LinkedIn profile</div>
+                    <div class="meta">linkedin.com · unused 7h</div>
+                  </div>
+                  <span class="copy">Keep</span>
+                </div>
+              </section>
+              <section class="section">
+                <div class="heading">Archived tabs</div>
+                <div class="row">
+                  <div>
+                    <div class="title">API design notes</div>
+                    <div class="meta">github.com · archived 2h ago</div>
+                  </div>
+                  <span class="copy">Restore</span>
+                </div>
+              </section>
+            </div>
+            <footer class="status">
+              <span>18 archived · cleanup after 24h</span><span>Settings</span>
+            </footer>
+          </aside>
+        </div>
+        <div class="group-message">Tuck grouped 4 Canvas tabs.</div>
+      </div>
+      <div class="caption one"><small>TabShelf</small>Less tab clutter. No lost context.</div>
+      <div class="caption two">
+        <small>Group related tabs</small>Canvas tabs become one clear Tuck group.
+      </div>
+      <div class="caption three">
+        <small>Keep useful context</small>Site-specific notes stay in the side panel.
+      </div>
+      <div class="caption four">
+        <small>Local-first Chrome extension</small>Archive safely. Restore instantly.
+        <span class="tag">TabShelf.</span>
+      </div>
+      <div class="end-card">
+        <div>
+          <div class="lockup"><span class="mark"></span>TabShelf</div>
+          <p>Keep the work. Lose the clutter.</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

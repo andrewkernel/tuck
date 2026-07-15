@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en" data-theme="obsidian">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>TabShelf Interactive Side Panel</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #171714;
+        --surface: #1d1d19;
+        --surface-hover: #24241f;
+        --border: #34342e;
+        --border-strong: #49483f;
+        --text: #f0efe8;
+        --muted: #a6a398;
+        --accent: #c8b66a;
+        --accent-hover: #d3c37c;
+        --danger: #d16f67;
+        --focus: #d7c982;
+        --radius: 6px;
+        --row-pad: 9px;
+        --font: "Geist", "IBM Plex Sans", system-ui, sans-serif;
+      }
+
+      html[data-theme="terminal"] {
+        --bg: #07100a;
+        --surface: #0c170f;
+        --surface-hover: #122219;
+        --border: #23402d;
+        --border-strong: #315a3d;
+        --text: #d8ffe2;
+        --muted: #87b895;
+        --accent: #54e37b;
+        --accent-hover: #78ef96;
+        --danger: #ff7777;
+        --focus: #8cffaa;
+        --font: "IBM Plex Mono", "Cascadia Code", monospace;
+      }
+
+      html[data-theme="arctic"] {
+        --bg: #111820;
+        --surface: #17212b;
+        --surface-hover: #1e2c38;
+        --border: #304150;
+        --border-strong: #42586a;
+        --text: #eef8ff;
+        --muted: #9bb1c3;
+        --accent: #79c9ff;
+        --accent-hover: #9bd7ff;
+        --danger: #ff8585;
+        --focus: #a7ddff;
+      }
+
+      html[data-theme="sunset"] {
+        --bg: #211411;
+        --surface: #2a1a16;
+        --surface-hover: #38231d;
+        --border: #51342b;
+        --border-strong: #71483b;
+        --text: #fff0e9;
+        --muted: #c5a093;
+        --accent: #ff9071;
+        --accent-hover: #ffa38a;
+        --danger: #ff7373;
+        --focus: #ffc0a7;
+      }
+
+      html[data-theme="sakura"] {
+        --bg: #181316;
+        --surface: #21191e;
+        --surface-hover: #2d2229;
+        --border: #46343f;
+        --border-strong: #644b5a;
+        --text: #fff1f7;
+        --muted: #c1a0b0;
+        --accent: #f195bd;
+        --accent-hover: #f6afd0;
+        --danger: #ff7777;
+        --focus: #ffc3dd;
+      }
+
+      html[data-theme="paper"] {
+        color-scheme: light;
+        --bg: #f5f1e8;
+        --surface: #fffdf7;
+        --surface-hover: #eee8dc;
+        --border: #d4ccbd;
+        --border-strong: #b8ae9d;
+        --text: #25231f;
+        --muted: #6e685f;
+        --accent: #745b20;
+        --accent-hover: #5d4817;
+        --danger: #a83d36;
+        --focus: #8c6e2b;
+      }
+
+      html[data-density="compact"] {
+        --row-pad: 5px;
+      }
+      html[data-density="comfortable"] {
+        --row-pad: 9px;
+      }
+      html[data-density="spacious"] {
+        --row-pad: 14px;
+      }
+
+      html[data-radius="square"] {
+        --radius: 0px;
+      }
+      html[data-radius="subtle"] {
+        --radius: 6px;
+      }
+      html[data-radius="rounded"] {
+        --radius: 12px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #0c0c0b;
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        line-height: 1.4;
+        display: grid;
+        place-items: center;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .panel {
+        width: min(410px, 100vw);
+        height: min(850px, 100vh);
+        background: var(--bg);
+        border: 1px solid var(--border-strong);
+        display: grid;
+        grid-template-rows: 52px 42px auto minmax(0, 1fr) 40px;
+        overflow: hidden;
+      }
+
+      .toolbar,
+      .tabs,
+      .themebar,
+      .statusbar {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px 0 16px;
+        background: var(--surface);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 650;
+      }
+      .brand-mark {
+        width: 17px;
+        height: 17px;
+        border: 1px solid var(--accent);
+        position: relative;
+      }
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        top: 7px;
+        border-top: 1px solid var(--accent);
+      }
+
+      .button {
+        min-height: 30px;
+        padding: 5px 10px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .button:hover {
+        background: var(--surface-hover);
+      }
+      .button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--bg);
+        font-weight: 650;
+      }
+      .button.primary:hover {
+        background: var(--accent-hover);
+      }
+      .button.text {
+        min-height: 26px;
+        padding: 2px 6px;
+        border-color: transparent;
+        color: var(--muted);
+      }
+      .button.text:hover {
+        color: var(--text);
+        background: var(--surface-hover);
+      }
+      .button.danger:hover {
+        color: var(--danger);
+      }
+
+      .tabs {
+        display: flex;
+        align-items: end;
+        gap: 24px;
+        padding: 0 16px;
+        background: var(--bg);
+      }
+      .tab {
+        height: 42px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 0;
+      }
+      .tab.active {
+        border-bottom-color: var(--accent);
+        color: var(--text);
+      }
+
+      .themebar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 8px;
+        padding: 8px 12px;
+        background: var(--bg);
+      }
+
+      select,
+      .inline-input {
+        width: 100%;
+        min-height: 31px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text);
+        padding: 0 9px;
+        outline: none;
+      }
+
+      select:focus,
+      .inline-input:focus {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 20%, transparent);
+      }
+
+      .content {
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-strong) transparent;
+      }
+      .section {
+        border-bottom: 1px solid var(--border);
+      }
+      .section-heading {
+        padding: 13px 16px 8px;
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .domain {
+        padding: 0 16px 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr) auto;
+        gap: 9px;
+        align-items: center;
+        min-height: 50px;
+        padding: var(--row-pad) 10px var(--row-pad) 16px;
+        border-top: 1px solid var(--border);
+      }
+      .row:hover {
+        background: var(--surface-hover);
+      }
+      .row.note {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+      .row.editing {
+        background: var(--surface);
+      }
+
+      .favicon {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--border-strong);
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        font-size: 10px;
+        background: var(--surface);
+      }
+      .row-main {
+        min-width: 0;
+      }
+      .title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text);
+      }
+      .value {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: text;
+        border-bottom: 1px dashed transparent;
+      }
+      .value:hover {
+        color: var(--text);
+        border-bottom-color: var(--border-strong);
+      }
+      .meta {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+      .editor {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 5px;
+        align-items: center;
+        margin-top: 5px;
+      }
+      .error {
+        color: var(--danger);
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 11px;
+        padding: 8px 16px;
+        border-top: 1px solid var(--border);
+      }
+
+      .add-note {
+        width: 100%;
+        text-align: left;
+        border: 0;
+        border-top: 1px solid var(--border);
+        background: transparent;
+        color: var(--accent);
+        padding: 10px 16px;
+        cursor: pointer;
+      }
+      .add-note:hover {
+        background: var(--surface-hover);
+      }
+
+      .statusbar {
+        border-bottom: 0;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px 0 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 1px;
+      }
+
+      @media (max-width: 440px) {
+        body {
+          display: block;
+        }
+        .panel {
+          width: 100vw;
+          height: 100vh;
+          border: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel" aria-label="TabShelf interactive side panel mockup">
+      <header class="toolbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>TabShelf</span>
+        </div>
+        <button class="button primary">Clean now</button>
+      </header>
+
+      <nav class="tabs" aria-label="Main views">
+        <button class="tab active">Tabs</button>
+        <button class="tab">Notes</button>
+        <button class="tab">Settings</button>
+      </nav>
+
+      <div class="themebar">
+        <select id="themeSelect" aria-label="Theme">
+          <option value="obsidian">Obsidian</option>
+          <option value="terminal">Terminal</option>
+          <option value="arctic">Arctic</option>
+          <option value="sunset">Sunset</option>
+          <option value="sakura">Sakura</option>
+          <option value="paper">Paper</option>
+        </select>
+        <select id="densitySelect" aria-label="Density">
+          <option value="compact">Compact</option>
+          <option value="comfortable" selected>Comfortable</option>
+          <option value="spacious">Spacious</option>
+        </select>
+        <select id="radiusSelect" aria-label="Corner style">
+          <option value="square">Square</option>
+          <option value="subtle" selected>Subtle</option>
+          <option value="rounded">Rounded</option>
+        </select>
+      </div>
+
+      <div class="content">
+        <section class="section">
+          <div class="section-heading">Current site</div>
+          <div class="domain">linkedin.com</div>
+
+          <div class="row note editable-note" data-kind="url">
+            <div class="row-main">
+              <div class="title">My LinkedIn profile</div>
+              <div class="value" tabindex="0">https://linkedin.com/in/andrewdang</div>
+            </div>
+            <div class="actions">
+              <button class="button text copy-btn">Copy</button>
+              <button class="button text edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <div class="row note editable-note" data-kind="text">
+            <div class="row-main">
+              <div class="title">Recruiter introduction</div>
+              <div class="value" tabindex="0">
+                Junior CS student and software engineering intern...
+              </div>
+            </div>
+            <div class="actions">
+              <button class="button text copy-btn">Copy</button>
+              <button class="button text edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <div class="row note editable-note" data-kind="url">
+            <div class="row-main">
+              <div class="title">Portfolio URL</div>
+              <div class="value" tabindex="0">https://andrewdang.dev</div>
+            </div>
+            <div class="actions">
+              <button class="button text copy-btn">Copy</button>
+              <button class="button text edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <div class="hint">
+            Click any saved value to change it inline. Press Enter to save or Escape to cancel.
+          </div>
+          <button class="add-note">+ Add note for linkedin.com</button>
+        </section>
+
+        <section class="section">
+          <div class="section-heading">Open tabs</div>
+
+          <div class="row">
+            <div class="favicon">R</div>
+            <div class="row-main">
+              <div class="title">React Flow documentation</div>
+              <div class="meta">reactflow.dev · unused 5h</div>
+            </div>
+            <div class="actions">
+              <button class="button text">Keep</button>
+              <button class="button text">Archive</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="favicon">G</div>
+            <div class="row-main">
+              <div class="title">Axios NO_PROXY wildcard handling</div>
+              <div class="meta">github.com · unused 9h</div>
+            </div>
+            <div class="actions">
+              <button class="button text">Keep</button>
+              <button class="button text">Archive</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-heading">Archived today</div>
+
+          <div class="row">
+            <div class="favicon">G</div>
+            <div class="row-main">
+              <div class="title">Rust compiler diagnostics</div>
+              <div class="meta">github.com · archived 2h ago</div>
+            </div>
+            <div class="actions">
+              <button class="button text">Restore</button>
+              <button class="button text danger">Delete</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="statusbar">
+        <span id="status">18 archived · cleanup after 24h</span>
+        <button class="button text">Settings</button>
+      </footer>
+    </main>
+
+    <script>
+      const root = document.documentElement;
+      const status = document.getElementById("status");
+
+      document.getElementById("themeSelect").addEventListener("change", (event) => {
+        root.dataset.theme = event.target.value;
+        status.textContent = `${event.target.options[event.target.selectedIndex].text} theme applied`;
+      });
+
+      document.getElementById("densitySelect").addEventListener("change", (event) => {
+        root.dataset.density = event.target.value;
+        status.textContent = `${event.target.options[event.target.selectedIndex].text} density applied`;
+      });
+
+      document.getElementById("radiusSelect").addEventListener("change", (event) => {
+        root.dataset.radius = event.target.value;
+        status.textContent = `${event.target.options[event.target.selectedIndex].text} corners applied`;
+      });
+
+      function startEdit(row) {
+        if (row.classList.contains("editing")) return;
+
+        const valueEl = row.querySelector(".value");
+        const actions = row.querySelector(".actions");
+        const original = valueEl.textContent;
+        const kind = row.dataset.kind;
+
+        row.classList.add("editing");
+        valueEl.hidden = true;
+        actions.hidden = true;
+
+        const editor = document.createElement("div");
+        editor.className = "editor";
+        editor.innerHTML = `
+        <input class="inline-input" aria-label="Edit saved value" value="${original.replaceAll('"', "&quot;")}" />
+        <button class="button text save-btn">Save</button>
+        <button class="button text cancel-btn">Cancel</button>
+      `;
+
+        const error = document.createElement("div");
+        error.className = "error";
+        error.hidden = true;
+
+        valueEl.after(editor, error);
+        const input = editor.querySelector("input");
+        input.focus();
+        input.select();
+
+        function cleanup() {
+          editor.remove();
+          error.remove();
+          valueEl.hidden = false;
+          actions.hidden = false;
+          row.classList.remove("editing");
+        }
+
+        function save() {
+          const next = input.value.trim();
+
+          if (!next) {
+            error.textContent = "Value cannot be empty.";
+            error.hidden = false;
+            return;
+          }
+
+          if (kind === "url") {
+            try {
+              const parsed = new URL(next);
+              if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+            } catch {
+              error.textContent = "Enter a valid http or https URL.";
+              error.hidden = false;
+              return;
+            }
+          }
+
+          valueEl.textContent = next;
+          cleanup();
+          status.textContent = "Saved locally";
+        }
+
+        editor.querySelector(".save-btn").addEventListener("click", save);
+        editor.querySelector(".cancel-btn").addEventListener("click", () => {
+          cleanup();
+          status.textContent = "Edit canceled";
+        });
+
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") save();
+          if (event.key === "Escape") {
+            cleanup();
+            status.textContent = "Edit canceled";
+          }
+        });
+      }
+
+      document.querySelectorAll(".editable-note").forEach((row) => {
+        row.querySelector(".value").addEventListener("click", () => startEdit(row));
+        row.querySelector(".value").addEventListener("keydown", (event) => {
+          if (event.key === "Enter") startEdit(row);
+        });
+        row.querySelector(".edit-btn").addEventListener("click", () => startEdit(row));
+        row.querySelector(".copy-btn").addEventListener("click", async (event) => {
+          const button = event.currentTarget;
+          const value = row.querySelector(".value").textContent;
+          try {
+            await navigator.clipboard.writeText(value);
+            button.textContent = "Copied";
+            status.textContent = "Copied to clipboard";
+            setTimeout(() => (button.textContent = "Copy"), 900);
+          } catch {
+            status.textContent = "Clipboard unavailable in this preview";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
