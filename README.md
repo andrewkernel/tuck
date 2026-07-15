@@ -61,3 +61,4 @@ pnpm build
 
 - [Launch-ready LinkedIn post](docs/LINKEDIN_LAUNCH_POST.md)
 - [Product demo video](assets/demo/tabshelf-demo.webm)
+- [UI stack decision](docs/UI_STACK.md)

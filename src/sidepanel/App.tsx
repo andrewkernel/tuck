@@ -1,4 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import {
+  Archive,
+  Download,
+  Folder,
+  Plus,
+  RotateCcw,
+  ShieldCheck,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import type { ActiveContext, OpenTabCandidate } from "../background/messages";
 import type { GroupTabsSummary } from "../background/group-tabs";
 import type {
@@ -167,10 +178,12 @@ export function App() {
           TabShelf
         </div>
         <div className="toolbar-actions">
-          <button className="button" onClick={() => void groupTabs()}>
+          <button className="button with-icon" onClick={() => void groupTabs()}>
+            <Folder aria-hidden="true" size={16} strokeWidth={1.8} />
             Group tabs
           </button>
-          <button className="button primary" onClick={() => void runCleanup()}>
+          <button className="button primary with-icon" onClick={() => void runCleanup()}>
+            <Archive aria-hidden="true" size={16} strokeWidth={1.8} />
             Clean now
           </button>
         </div>
@@ -405,8 +418,9 @@ function TabsView({
               <NoteRow key={note.id} note={note} onCopy={onCopy} onOpen={onOpen} onSave={onSave} />
             ))}
             {matchingNotes.length === 0 && <EmptyState>No saved items for this site.</EmptyState>}
-            <button className="add-row" onClick={() => onAddNote(hostname)}>
-              + Add a note for {hostname}
+            <button className="add-row with-icon" onClick={() => onAddNote(hostname)}>
+              <Plus aria-hidden="true" size={16} strokeWidth={1.8} />
+              Add a note for {hostname}
             </button>
           </>
         ) : (
@@ -428,14 +442,16 @@ function TabsView({
                 </p>
               </div>
               <div className="row-actions">
-                <button className="text-button" onClick={() => onProtect(tab.id)}>
+                <button className="text-button with-icon" onClick={() => onProtect(tab.id)}>
+                  <ShieldCheck aria-hidden="true" size={15} strokeWidth={1.8} />
                   Keep
                 </button>
                 <button
-                  className="text-button"
+                  className="text-button with-icon"
                   disabled={tab.protected}
                   onClick={() => onArchive(tab.id)}
                 >
+                  <Archive aria-hidden="true" size={15} strokeWidth={1.8} />
                   {tab.protected ? "Protected" : "Archive"}
                 </button>
               </div>
@@ -470,15 +486,17 @@ function TabsView({
                       </div>
                       <div className="row-actions">
                         <button
-                          className="text-button"
+                          className="text-button with-icon"
                           onClick={() => onRestore(archive.id, false)}
                         >
+                          <RotateCcw aria-hidden="true" size={15} strokeWidth={1.8} />
                           Restore
                         </button>
                         <button
-                          className="text-button danger-text"
+                          className="text-button danger-text with-icon"
                           onClick={() => onDeleteArchive(archive)}
                         >
+                          <Trash2 aria-hidden="true" size={15} strokeWidth={1.8} />
                           Delete
                         </button>
                       </div>
@@ -512,7 +530,8 @@ function NotesView({
     <section className="section notes-view">
       <div className="section-title-row">
         <h2>Saved items</h2>
-        <button className="button" onClick={onAdd}>
+        <button className="button with-icon" onClick={onAdd}>
+          <Plus aria-hidden="true" size={16} strokeWidth={1.8} />
           Add note
         </button>
       </div>
@@ -568,95 +587,99 @@ function NoteEditor({
   const update = <K extends keyof SavedNote>(key: K, value: SavedNote[K]) =>
     setDraft((item) => ({ ...item, [key]: value }));
   return (
-    <div className="dialog-backdrop" role="presentation">
-      <section
-        className="dialog editor-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="note-editor-title"
-      >
-        <h2 id="note-editor-title">{initial ? "Edit saved item" : "Add saved item"}</h2>
-        <label>
-          Title
-          <input
-            autoFocus
-            value={draft.title}
-            onChange={(event) => update("title", event.target.value)}
-          />
-        </label>
-        <label>
-          Value
-          <textarea value={draft.value} onChange={(event) => update("value", event.target.value)} />
-        </label>
-        <div className="form-grid">
+    <Dialog.Root open onOpenChange={(open) => !open && onCancel()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="dialog-backdrop" />
+        <Dialog.Content className="dialog editor-dialog">
+          <Dialog.Title>{initial ? "Edit saved item" : "Add saved item"}</Dialog.Title>
+          <Dialog.Description className="visually-hidden">
+            Save reusable text or a link for TabShelf.
+          </Dialog.Description>
           <label>
-            Kind
-            <select
-              value={draft.kind}
-              onChange={(event) => update("kind", event.target.value as SavedNote["kind"])}
-            >
-              {["text", "url", "email", "profile", "project", "resume", "form"].map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
+            Title
+            <input
+              autoFocus
+              value={draft.title}
+              onChange={(event) => update("title", event.target.value)}
+            />
           </label>
           <label>
-            Primary click
-            <select
-              value={draft.primaryAction}
+            Value
+            <textarea
+              value={draft.value}
+              onChange={(event) => update("value", event.target.value)}
+            />
+          </label>
+          <div className="form-grid">
+            <label>
+              Kind
+              <select
+                value={draft.kind}
+                onChange={(event) => update("kind", event.target.value as SavedNote["kind"])}
+              >
+                {["text", "url", "email", "profile", "project", "resume", "form"].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Primary click
+              <select
+                value={draft.primaryAction}
+                onChange={(event) =>
+                  update("primaryAction", event.target.value as SavedNote["primaryAction"])
+                }
+              >
+                {["copy", "open", "edit"].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {draft.kind === "url" && (
+            <label>
+              Open link in
+              <select
+                value={draft.openTarget}
+                onChange={(event) =>
+                  update("openTarget", event.target.value as SavedNote["openTarget"])
+                }
+              >
+                <option value="new-tab">New tab</option>
+                <option value="current-tab">Current tab</option>
+              </select>
+            </label>
+          )}
+          <label>
+            Domains <span className="field-hint">(comma separated)</span>
+            <input
+              value={draft.domains.join(", ")}
               onChange={(event) =>
-                update("primaryAction", event.target.value as SavedNote["primaryAction"])
+                update(
+                  "domains",
+                  event.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                )
               }
-            >
-              {["copy", "open", "edit"].map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
+            />
           </label>
-        </div>
-        {draft.kind === "url" && (
-          <label>
-            Open link in
-            <select
-              value={draft.openTarget}
-              onChange={(event) =>
-                update("openTarget", event.target.value as SavedNote["openTarget"])
-              }
+          <div className="dialog-actions">
+            <Dialog.Close asChild>
+              <button className="button">Cancel</button>
+            </Dialog.Close>
+            <button
+              className="button primary"
+              disabled={!draft.title.trim() || !draft.value.trim()}
+              onClick={() => void onSave(draft)}
             >
-              <option value="new-tab">New tab</option>
-              <option value="current-tab">Current tab</option>
-            </select>
-          </label>
-        )}
-        <label>
-          Domains <span className="field-hint">(comma separated)</span>
-          <input
-            value={draft.domains.join(", ")}
-            onChange={(event) =>
-              update(
-                "domains",
-                event.target.value
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              )
-            }
-          />
-        </label>
-        <div className="dialog-actions">
-          <button className="button" onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            className="button primary"
-            disabled={!draft.title.trim() || !draft.value.trim()}
-            onClick={() => void onSave(draft)}
-          >
-            Save
-          </button>
-        </div>
-      </section>
-    </div>
+              Save
+            </button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -920,13 +943,16 @@ function SettingsView({
           {new Blob([JSON.stringify(root)]).size.toLocaleString()} bytes used locally.
         </p>
         <div className="button-row">
-          <button className="button" onClick={onExport}>
+          <button className="button with-icon" onClick={onExport}>
+            <Download aria-hidden="true" size={16} strokeWidth={1.8} />
             Export JSON
           </button>
-          <button className="button" onClick={() => file.current?.click()}>
+          <button className="button with-icon" onClick={() => file.current?.click()}>
+            <Upload aria-hidden="true" size={16} strokeWidth={1.8} />
             Import JSON
           </button>
-          <button className="button danger-outline" onClick={onReset}>
+          <button className="button danger-outline with-icon" onClick={onReset}>
+            <Trash2 aria-hidden="true" size={16} strokeWidth={1.8} />
             Clear archive and notes
           </button>
         </div>

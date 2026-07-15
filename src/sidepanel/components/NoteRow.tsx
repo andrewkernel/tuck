@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Copy, ExternalLink, Pencil, Save, Trash2, X } from "lucide-react";
 import type { SavedNote } from "../../domain/types";
 import { normalizeUrl } from "../../shared/urls";
 
@@ -95,17 +96,19 @@ export function NoteRow({
               />
             )}
             <div className="inline-actions">
-              <button className="text-button" onClick={() => void save()}>
+              <button className="text-button with-icon" onClick={() => void save()}>
+                <Save aria-hidden="true" size={15} strokeWidth={1.8} />
                 Save
               </button>
               <button
-                className="text-button"
+                className="text-button with-icon"
                 onClick={() => {
                   setValue(note.value);
                   setError("");
                   setEditing(false);
                 }}
               >
+                <X aria-hidden="true" size={15} strokeWidth={1.8} />
                 Cancel
               </button>
             </div>
@@ -130,19 +133,23 @@ export function NoteRow({
         {note.domains.length > 0 && <p className="row-meta">{note.domains.join(", ")}</p>}
       </div>
       <div className="row-actions" onClick={(event) => event.stopPropagation()}>
-        <button className="text-button" onClick={() => onCopy(note)}>
+        <button className="text-button with-icon" onClick={() => onCopy(note)}>
+          <Copy aria-hidden="true" size={15} strokeWidth={1.8} />
           Copy
         </button>
         {note.kind === "url" && (
-          <button className="text-button" onClick={() => onOpen(note)}>
+          <button className="text-button with-icon" onClick={() => onOpen(note)}>
+            <ExternalLink aria-hidden="true" size={15} strokeWidth={1.8} />
             Open
           </button>
         )}
-        <button className="text-button" onClick={() => setEditing(true)}>
+        <button className="text-button with-icon" onClick={() => setEditing(true)}>
+          <Pencil aria-hidden="true" size={15} strokeWidth={1.8} />
           Edit
         </button>
         {onDelete && (
-          <button className="text-button danger-text" onClick={() => onDelete(note)}>
+          <button className="text-button danger-text with-icon" onClick={() => onDelete(note)}>
+            <Trash2 aria-hidden="true" size={15} strokeWidth={1.8} />
             Delete
           </button>
         )}

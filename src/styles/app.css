@@ -304,6 +304,15 @@ select:focus {
   color: var(--text-muted);
   cursor: pointer;
 }
+.with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.with-icon svg {
+  flex: none;
+}
 .text-button:hover {
   background: var(--surface-hover);
   color: var(--text);
@@ -473,14 +482,14 @@ summary {
 }
 .dialog-backdrop {
   position: fixed;
-  z-index: 10;
-  display: grid;
   inset: 0;
-  padding: 16px;
   background: rgb(0 0 0 / 55%);
-  place-items: center;
 }
 .dialog {
+  position: fixed;
+  z-index: 11;
+  top: 50%;
+  left: 50%;
   width: min(100%, 390px);
   max-height: calc(100vh - 32px);
   overflow: auto;
@@ -489,8 +498,10 @@ summary {
   border-radius: 8px;
   background: var(--surface);
   box-shadow: 0 2px 8px rgb(0 0 0 / 18%);
+  transform: translate(-50%, -50%);
 }
-.dialog h2 {
+.dialog h2,
+.dialog [data-radix-dialog-title] {
   margin: 0 0 6px;
   font-size: 16px;
 }
