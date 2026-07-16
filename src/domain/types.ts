@@ -124,9 +124,17 @@ export type TuckSenseAnalysis = {
   archiveSuggestions: TuckSenseArchiveSuggestion[];
 };
 
+export type TuckSenseFeedback = {
+  query: string;
+  tabId: number;
+  relevance: "relevant" | "not-relevant";
+  updatedAt: number;
+};
+
 export type TuckSenseState = {
   enabled: boolean;
   lastAnalysis?: TuckSenseAnalysis;
+  feedback: TuckSenseFeedback[];
 };
 
 export type StorageRoot = {

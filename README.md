@@ -13,7 +13,7 @@ TabShelf is a local-first Chrome side-panel extension that makes tab cleanup saf
 - **Quick recovery.** Search, restore, or delete archived tabs from the side panel.
 - **Useful saved items.** Keep domain-aware links and snippets. Correct values inline and choose Copy, Open, or Edit as the primary action.
 - **Tuck tab grouping.** Select **Group tabs** to collect matching ungrouped site tabs into native Chrome tab groups named `Tuck`. It never closes, merges, or changes existing groups.
-- **Tuck Sense (opt-in).** On supported Chrome devices, use the browser's on-device model to propose project groups, archive reviews, and natural-language tab search. Suggestions are validated locally and require a separate action to group or archive anything.
+- **Tuck Sense (opt-in).** Search starts with local title, URL, domain, and approved-note matches; on supported Chrome devices, the browser's on-device model reranks only those candidates. It can also propose project groups and archive reviews. Suggestions are validated locally and require a separate action to group or archive anything.
 - **Local and customizable.** Use accessible themes, custom theme validation, protected domains, and JSON export/import. No account required.
 
 ## Privacy

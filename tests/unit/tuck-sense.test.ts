@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { validateTuckSenseAnalysis } from "../../src/tuck-sense/engine";
+import {
+  localSearchTuckSense,
+  mergeTuckSenseSearchResults,
+  normalizeTuckSenseQuery,
+  validateTuckSenseAnalysis,
+} from "../../src/tuck-sense/engine";
 import type { TuckSenseTabContext } from "../../src/domain/types";
 
 const tabs: TuckSenseTabContext[] = [
@@ -65,5 +70,55 @@ describe("Tuck Sense response validation", () => {
       ignored: "not allowed",
     };
     expect(() => validateTuckSenseAnalysis(malformed, tabs)).toThrow();
+  });
+
+  it("finds literal title, URL, domain, and approved-note matches before reranking", () => {
+    const matches = localSearchTuckSense("internship applications", tabs, [
+      {
+        id: "note-1",
+        title: "Application follow-up",
+        value: "Internship interview checklist",
+        kind: "text",
+        primaryAction: "copy",
+        openTarget: "new-tab",
+        domains: ["jobs.example.com"],
+        tags: [],
+        createdAt: 1,
+        updatedAt: 1,
+        copyCount: 0,
+        pinned: false,
+      },
+    ]);
+    expect(matches.map((match) => match.tab.id)).toEqual([1]);
+    expect(matches[0]?.reason).toContain("internship");
+  });
+
+  it("keeps a local not-relevant decision out of future results for the same query", () => {
+    const query = normalizeTuckSenseQuery("internship application");
+    expect(
+      localSearchTuckSense(
+        "internship application",
+        tabs,
+        [],
+        [{ query, tabId: 1, relevance: "not-relevant", updatedAt: 1 }],
+      ),
+    ).toEqual([]);
+  });
+
+  it("rejects unknown or duplicate model ids while preserving local candidates", () => {
+    const local = localSearchTuckSense("internship application", tabs, []);
+    const merged = mergeTuckSenseSearchResults(local, {
+      orderedTabIds: [999, 1, 1],
+      reasons: [
+        { tabId: 999, reason: "Not a supplied tab." },
+        { tabId: 1, reason: "Application tracker." },
+      ],
+    });
+    expect(merged).toEqual([
+      expect.objectContaining({
+        tab: expect.objectContaining({ id: 1 }),
+        reason: "Application tracker.",
+      }),
+    ]);
   });
 });

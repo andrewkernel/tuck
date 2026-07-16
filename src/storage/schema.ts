@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ExtensionSettings, StorageRoot, ThemeTokens, TuckSenseState } from "../domain/types";
 
-export const STORAGE_VERSION = 2;
+export const STORAGE_VERSION = 3;
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex color.");
 export const themeTokensSchema = z.object({
@@ -145,6 +145,16 @@ const tuckSenseStateSchema = z.object({
         .max(20),
     })
     .optional(),
+  feedback: z
+    .array(
+      z.object({
+        query: z.string().min(1).max(500),
+        tabId: z.number().int().nonnegative(),
+        relevance: z.enum(["relevant", "not-relevant"]),
+        updatedAt: z.number().finite().nonnegative(),
+      }),
+    )
+    .max(200),
 });
 
 export const storageRootSchema = z.object({
@@ -192,7 +202,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   customThemes: [],
 };
 
-export const DEFAULT_TUCK_SENSE: TuckSenseState = { enabled: false };
+export const DEFAULT_TUCK_SENSE: TuckSenseState = { enabled: false, feedback: [] };
 
 export const createDefaultRoot = (): StorageRoot => ({
   version: STORAGE_VERSION,

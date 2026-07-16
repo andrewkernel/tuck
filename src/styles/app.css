@@ -231,6 +231,10 @@ summary:focus-visible {
 .tuck-sense-result {
   border-top: 1px solid var(--border);
 }
+.tuck-sense-result .row-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .search label,
 label {
   color: var(--text-muted);

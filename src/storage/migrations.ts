@@ -7,12 +7,17 @@ export const migrateRoot = (value: unknown): StorageRoot | null => {
     typeof value === "object" &&
     value !== null &&
     "version" in value &&
-    (value as { version?: unknown }).version === 1
+    ((value as { version?: unknown }).version === 1 ||
+      (value as { version?: unknown }).version === 2)
   ) {
+    const previous = value as Record<string, unknown>;
     const migrated = storageRootSchema.safeParse({
-      ...(value as Record<string, unknown>),
-      version: 2,
-      tuckSense: structuredClone(DEFAULT_TUCK_SENSE),
+      ...previous,
+      version: 3,
+      tuckSense:
+        previous.version === 2 && typeof previous.tuckSense === "object" && previous.tuckSense
+          ? { ...(previous.tuckSense as Record<string, unknown>), feedback: [] }
+          : structuredClone(DEFAULT_TUCK_SENSE),
     });
     return migrated.success ? migrated.data : null;
   }

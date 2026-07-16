@@ -19,7 +19,25 @@ describe("storage validation", () => {
     expect(result).toEqual(
       expect.objectContaining({
         ok: true,
-        data: expect.objectContaining({ version: 2, tuckSense: { enabled: false } }),
+        data: expect.objectContaining({
+          version: 3,
+          tuckSense: expect.objectContaining({ enabled: false, feedback: [] }),
+        }),
+      }),
+    );
+  });
+  it("migrates Tuck Sense version 2 data with empty local feedback", () => {
+    const legacy = createDefaultRoot() as unknown as Record<string, unknown>;
+    legacy.version = 2;
+    legacy.tuckSense = { enabled: true };
+    const result = parseImport(JSON.stringify(legacy));
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: expect.objectContaining({
+          version: 3,
+          tuckSense: expect.objectContaining({ enabled: true, feedback: [] }),
+        }),
       }),
     );
   });

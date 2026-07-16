@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { BrainCircuit, FolderPlus, Search } from "lucide-react";
+import { BrainCircuit, FolderPlus, Search, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { StorageRoot, TuckSenseTabContext } from "../../domain/types";
 import {
   analyzeTuckSense,
   getTuckSenseAvailability,
+  normalizeTuckSenseQuery,
   searchTuckSense,
 } from "../../tuck-sense/engine";
 import { send } from "../api";
@@ -28,6 +29,8 @@ export function TuckSensePanel({
   const [searchResult, setSearchResult] = useState<{
     answer: string;
     matches: Array<{ tab: TuckSenseTabContext; reason: string }>;
+    queryKey: string;
+    source: "local" | "hybrid";
   } | null>(null);
 
   useEffect(() => {
@@ -78,13 +81,33 @@ export function TuckSensePanel({
     try {
       const context = await getContext();
       if (!context.ok) return onStatus(context.error.message);
-      const result = await searchTuckSense(question, context.data, notes);
-      setSearchResult({ answer: result.answer, matches: result.matches });
+      const result = await searchTuckSense(question, context.data, notes, root.tuckSense.feedback);
+      setSearchResult({
+        answer: result.answer,
+        matches: result.matches,
+        queryKey: normalizeTuckSenseQuery(question),
+        source: result.source,
+      });
     } catch (error) {
       onStatus(error instanceof Error ? error.message : "Tuck Sense could not search these tabs.");
     } finally {
       setWorking(false);
     }
+  };
+  const recordFeedback = async (tabId: number, relevance: "relevant" | "not-relevant") => {
+    if (!searchResult) return;
+    const next = [
+      {
+        query: searchResult.queryKey,
+        tabId,
+        relevance,
+        updatedAt: Date.now(),
+      },
+      ...root.tuckSense.feedback.filter(
+        (item) => !(item.query === searchResult.queryKey && item.tabId === tabId),
+      ),
+    ].slice(0, 200);
+    if (await saveState({ feedback: next })) onStatus("Saved for future searches on this device.");
   };
   const createGroup = async (tabIds: number[], label: string) => {
     const result = await send<{ tabs: number; label: string }>({
@@ -152,7 +175,7 @@ export function TuckSensePanel({
             </button>
           </div>
           <div className="search tuck-sense-search">
-            <label htmlFor="tuck-sense-query">Ask Tuck Sense</label>
+            <label htmlFor="tuck-sense-query">Find tabs</label>
             <div className="inline-search">
               <input
                 id="tuck-sense-query"
@@ -175,7 +198,10 @@ export function TuckSensePanel({
       )}
       {searchResult && (
         <div className="tuck-sense-result">
-          <p className="section-detail">{searchResult.answer}</p>
+          <p className="section-detail">
+            {searchResult.answer}{" "}
+            {searchResult.source === "hybrid" ? "Results were reranked locally in Chrome." : ""}
+          </p>
           {searchResult.matches.map(({ tab, reason }) => (
             <div className="row" key={tab.id}>
               <div className="row-main">
@@ -183,6 +209,22 @@ export function TuckSensePanel({
                 <p className="row-meta">
                   {tab.domain} · {reason}
                 </p>
+              </div>
+              <div className="row-actions">
+                <button
+                  className="text-button with-icon"
+                  onClick={() => void recordFeedback(tab.id, "relevant")}
+                >
+                  <ThumbsUp aria-hidden="true" size={15} strokeWidth={1.8} />
+                  Relevant
+                </button>
+                <button
+                  className="text-button with-icon"
+                  onClick={() => void recordFeedback(tab.id, "not-relevant")}
+                >
+                  <ThumbsDown aria-hidden="true" size={15} strokeWidth={1.8} />
+                  Not relevant
+                </button>
               </div>
             </div>
           ))}
