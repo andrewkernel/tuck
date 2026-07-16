@@ -29,7 +29,6 @@ import { DEFAULT_THEME_TOKENS } from "../storage/schema";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { EmptyState } from "./components/EmptyState";
 import { NoteRow } from "./components/NoteRow";
-import { TuckSensePanel } from "./components/TuckSensePanel";
 import { send } from "./api";
 import { applyTheme, resolveTheme, THEME_PRESETS, validateTheme } from "./theme";
 
@@ -136,7 +135,7 @@ export function App() {
   const deleteNote = (note: SavedNote) =>
     setConfirmation({
       title: "Delete saved item?",
-      detail: `Delete “${note.title}” permanently from local TabShelf data?`,
+      detail: `Delete “${note.title}” permanently from local Tuck data?`,
       label: "Delete",
       action: () =>
         void after(
@@ -172,11 +171,11 @@ export function App() {
   );
 
   return (
-    <main className="app" aria-label="TabShelf">
+    <main className="app" aria-label="Tuck">
       <header className="toolbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
-          TabShelf
+          Tuck
         </div>
         <div className="toolbar-actions">
           <button className="button with-icon" onClick={() => void groupTabs()}>
@@ -246,19 +245,6 @@ export function App() {
                   ),
               })
             }
-            tuckSense={
-              <TuckSensePanel
-                root={root}
-                onArchive={(tabId) =>
-                  void after(
-                    send<ArchivedTab>({ type: "ARCHIVE_TAB", tabId }),
-                    "Tab archived before closing.",
-                  )
-                }
-                onStatus={status}
-                onRefresh={refresh}
-              />
-            }
           />
         )}
         {view === "notes" && (
@@ -283,7 +269,7 @@ export function App() {
               setConfirmation({
                 title: "Clear all local data?",
                 detail:
-                  "This permanently deletes TabShelf archives, notes, settings, and protection rules from this browser.",
+                  "This permanently deletes Tuck archives, notes, settings, and protection rules from this browser.",
                 label: "Clear all data",
                 action: () =>
                   void after(
@@ -393,7 +379,6 @@ function TabsView({
   onProtect,
   onRestore,
   onDeleteArchive,
-  tuckSense,
 }: {
   search: string;
   setSearch: (value: string) => void;
@@ -411,7 +396,6 @@ function TabsView({
   onProtect: (tabId: number) => void;
   onRestore: (archiveId: string, background: boolean) => void;
   onDeleteArchive: (archive: ArchivedTab) => void;
-  tuckSense: React.ReactNode;
 }) {
   return (
     <>
@@ -425,7 +409,6 @@ function TabsView({
           placeholder="Search archived tabs"
         />
       </div>
-      {tuckSense}
       <section className="section">
         <h2>Current site</h2>
         {hostname ? (
@@ -479,7 +462,7 @@ function TabsView({
       <section className="section">
         <h2>Archived tabs</h2>
         {archives.length === 0 ? (
-          <EmptyState>No archived tabs. Tabs closed by TabShelf will appear here.</EmptyState>
+          <EmptyState>No archived tabs. Tabs closed by Tuck will appear here.</EmptyState>
         ) : (
           archiveGroups(archives).map(
             ([label, items]) =>
@@ -610,7 +593,7 @@ function NoteEditor({
         <Dialog.Content className="dialog editor-dialog">
           <Dialog.Title>{initial ? "Edit saved item" : "Add saved item"}</Dialog.Title>
           <Dialog.Description className="visually-hidden">
-            Save reusable text or a link for TabShelf.
+            Save reusable text or a link for Tuck.
           </Dialog.Description>
           <label>
             Title
@@ -1034,7 +1017,7 @@ const downloadExport = (root: StorageRoot, status: (message: string) => void) =>
   const url = URL.createObjectURL(new Blob([exportRoot(root)], { type: "application/json" }));
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `tabshelf-export-${new Date().toISOString().slice(0, 10)}.json`;
+  anchor.download = `tuck-export-${new Date().toISOString().slice(0, 10)}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
   status("Export downloaded.");

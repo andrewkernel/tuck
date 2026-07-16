@@ -18,7 +18,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["chrome", "dom-chromium-ai", "vitest/globals"]
+    "types": ["chrome", "vitest/globals"]
   },
   "include": ["src", "tests"]
 }

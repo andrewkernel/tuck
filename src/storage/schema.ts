@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { ExtensionSettings, StorageRoot, ThemeTokens, TuckSenseState } from "../domain/types";
+import type { ExtensionSettings, StorageRoot, ThemeTokens } from "../domain/types";
 
-export const STORAGE_VERSION = 3;
+export const STORAGE_VERSION = 4;
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex color.");
 export const themeTokensSchema = z.object({
@@ -117,46 +117,6 @@ const cleanupLogSchema = z.object({
   detail: z.string(),
 });
 
-const tuckSenseStateSchema = z.object({
-  enabled: z.boolean(),
-  lastAnalysis: z
-    .object({
-      generatedAt: z.number().finite().nonnegative(),
-      summary: z.string().min(1).max(400),
-      groups: z
-        .array(
-          z.object({
-            label: z.string().min(1).max(48),
-            reason: z.string().min(1).max(240),
-            tabIds: z.array(z.number().int().nonnegative()).min(2).max(12),
-          }),
-        )
-        .max(8),
-      archiveSuggestions: z
-        .array(
-          z.object({
-            tabId: z.number().int().nonnegative(),
-            title: z.string().min(1).max(300),
-            domain: z.string().min(1).max(253),
-            kind: z.enum(["duplicate", "stale"]),
-            reason: z.string().min(1).max(240),
-          }),
-        )
-        .max(20),
-    })
-    .optional(),
-  feedback: z
-    .array(
-      z.object({
-        query: z.string().min(1).max(500),
-        tabId: z.number().int().nonnegative(),
-        relevance: z.enum(["relevant", "not-relevant"]),
-        updatedAt: z.number().finite().nonnegative(),
-      }),
-    )
-    .max(200),
-});
-
 export const storageRootSchema = z.object({
   version: z.literal(STORAGE_VERSION),
   archivedTabs: z.array(archivedTabSchema).max(5_000),
@@ -164,7 +124,6 @@ export const storageRootSchema = z.object({
   protectedTabs: z.array(protectedTabSchema).max(5_000),
   settings: settingsSchema,
   cleanupLog: z.array(cleanupLogSchema).max(100),
-  tuckSense: tuckSenseStateSchema,
 });
 
 export const DEFAULT_THEME_TOKENS: ThemeTokens = {
@@ -202,8 +161,6 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   customThemes: [],
 };
 
-export const DEFAULT_TUCK_SENSE: TuckSenseState = { enabled: false, feedback: [] };
-
 export const createDefaultRoot = (): StorageRoot => ({
   version: STORAGE_VERSION,
   archivedTabs: [],
@@ -211,5 +168,4 @@ export const createDefaultRoot = (): StorageRoot => ({
   protectedTabs: [],
   settings: structuredClone(DEFAULT_SETTINGS),
   cleanupLog: [],
-  tuckSense: structuredClone(DEFAULT_TUCK_SENSE),
 });

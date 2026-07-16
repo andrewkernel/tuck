@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 
 test("the packed extension loads its side panel", async () => {
   const extensionPath = resolve("dist");
-  const userDataDir = await mkdtemp(resolve(tmpdir(), "tabshelf-e2e-"));
+  const userDataDir = await mkdtemp(resolve(tmpdir(), "tuck-e2e-"));
   const context = await chromium.launchPersistentContext(userDataDir, {
     headless: false,
     ignoreDefaultArgs: ["--disable-extensions"],
@@ -17,7 +17,7 @@ test("the packed extension loads its side panel", async () => {
     const extension = await page.locator("extensions-manager").evaluate((manager) => {
       const itemList = manager.shadowRoot?.querySelector("extensions-item-list");
       const item = Array.from(itemList?.shadowRoot?.querySelectorAll("extensions-item") ?? []).find(
-        (candidate) => candidate.shadowRoot?.textContent?.includes("TabShelf"),
+        (candidate) => candidate.shadowRoot?.textContent?.includes("Tuck"),
       );
       if (!item) return { id: undefined, text: itemList?.shadowRoot?.textContent };
       const candidate = item as unknown as { data?: { id?: string }; extension?: { id?: string } };
@@ -28,9 +28,9 @@ test("the packed extension loads its side panel", async () => {
     });
     expect(extension?.id, extension?.text ?? undefined).toBeTruthy();
     await page.goto(`chrome-extension://${extension?.id}/sidepanel/index.html`);
-    await expect(page.getByRole("main", { name: "TabShelf" })).toBeVisible();
+    await expect(page.getByRole("main", { name: "Tuck" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Clean now" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Turn on" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Group tabs" })).toBeVisible();
   } finally {
     await context.close();
   }

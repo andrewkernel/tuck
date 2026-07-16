@@ -1,10 +1,4 @@
-import type {
-  ExtensionSettings,
-  Result,
-  SavedNote,
-  TuckSenseState,
-  TuckSenseTabContext,
-} from "../domain/types";
+import type { ExtensionSettings, Result, SavedNote } from "../domain/types";
 import { createId } from "../shared/ids";
 import { getHostname, normalizeUrl } from "../shared/urls";
 import { exportRoot, parseImport } from "../storage/export-import";
@@ -28,7 +22,6 @@ export type ExtensionMessage =
   | { type: "GET_ROOT" }
   | { type: "GET_ACTIVE_CONTEXT" }
   | { type: "GET_OPEN_TABS" }
-  | { type: "GET_TUCK_SENSE_CONTEXT" }
   | { type: "RUN_CLEANUP" }
   | { type: "AUTO_GROUP_TABS" }
   | { type: "GROUP_SUGGESTED_TABS"; tabIds: number[]; label: string }
@@ -41,7 +34,6 @@ export type ExtensionMessage =
   | { type: "COPY_NOTE"; noteId: string }
   | { type: "OPEN_NOTE"; noteId: string }
   | { type: "UPDATE_SETTINGS"; patch: Partial<ExtensionSettings> }
-  | { type: "UPDATE_TUCK_SENSE"; patch: Partial<TuckSenseState> }
   | { type: "IMPORT_ROOT"; text: string }
   | { type: "EXPORT_ROOT" };
 
@@ -62,7 +54,7 @@ const getActiveContext = async (): Promise<Result<ActiveContext>> => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     return { ok: true, data: { hostname: tab?.url ? getHostname(tab.url) : null, tabId: tab?.id } };
   } catch {
-    return failure("UNKNOWN", "TabShelf could not read the active tab.");
+    return failure("UNKNOWN", "Tuck could not read the active tab.");
   }
 };
 
@@ -104,56 +96,7 @@ const getOpenTabs = async (): Promise<Result<OpenTabCandidate[]>> => {
       data: candidates.sort((left, right) => right.unusedMinutes - left.unusedMinutes),
     };
   } catch {
-    return failure("UNKNOWN", "TabShelf could not read open tabs.");
-  }
-};
-
-const getTuckSenseContext = async (): Promise<Result<TuckSenseTabContext[]>> => {
-  const root = await repository.getRoot();
-  if (!root.ok) return root;
-  try {
-    const query: chrome.tabs.QueryInfo = root.data.settings.includeAllWindows
-      ? {}
-      : { currentWindow: true };
-    const now = Date.now();
-    const tabs = await chrome.tabs.query(query);
-    return {
-      ok: true,
-      data: tabs.flatMap((tab): TuckSenseTabContext[] => {
-        if (
-          tab.id === undefined ||
-          tab.windowId === undefined ||
-          !tab.url ||
-          !normalizeUrl(tab.url) ||
-          tab.incognito ||
-          tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE
-        )
-          return [];
-        const domain = getHostname(tab.url);
-        if (!domain) return [];
-        const archiveEligibility = getEligibility(
-          tab,
-          root.data.settings,
-          root.data.protectedTabs,
-          root.data.settings.archiveAfterMinutes,
-          new Set(),
-          now,
-        );
-        return [
-          {
-            id: tab.id,
-            windowId: tab.windowId,
-            title: tab.title || domain,
-            url: tab.url,
-            domain,
-            unusedMinutes: Math.max(0, Math.floor((now - (tab.lastAccessed ?? now)) / 60_000)),
-            archiveEligible: archiveEligibility.eligible,
-          },
-        ];
-      }),
-    };
-  } catch {
-    return failure("UNKNOWN", "TabShelf could not prepare tabs for Tuck Sense.");
+    return failure("UNKNOWN", "Tuck could not read open tabs.");
   }
 };
 
@@ -170,7 +113,7 @@ const restoreArchive = async (archiveId: string, background = false): Promise<Re
   } catch {
     return failure(
       "TAB_RESTORE_FAILED",
-      "TabShelf could not open this archive. The saved entry remains available.",
+      "Tuck could not open this archive. The saved entry remains available.",
     );
   }
 };
@@ -205,7 +148,7 @@ const openNote = async (noteId: string): Promise<Result<void>> => {
     } else await chrome.tabs.create({ url });
     return { ok: true, data: undefined };
   } catch {
-    return failure("UNKNOWN", "TabShelf could not open this link.");
+    return failure("UNKNOWN", "Tuck could not open this link.");
   }
 };
 
@@ -225,8 +168,6 @@ export const handleMessage = async (message: ExtensionMessage): Promise<Result<u
       return getActiveContext();
     case "GET_OPEN_TABS":
       return getOpenTabs();
-    case "GET_TUCK_SENSE_CONTEXT":
-      return getTuckSenseContext();
     case "RUN_CLEANUP":
       return runCleanup();
     case "AUTO_GROUP_TABS": {
@@ -259,8 +200,6 @@ export const handleMessage = async (message: ExtensionMessage): Promise<Result<u
       return openNote(message.noteId);
     case "UPDATE_SETTINGS":
       return repository.updateSettings(message.patch);
-    case "UPDATE_TUCK_SENSE":
-      return repository.updateTuckSense(message.patch);
     case "EXPORT_ROOT": {
       const root = await repository.getRoot();
       return root.ok ? { ok: true, data: exportRoot(root.data) } : root;
@@ -275,11 +214,11 @@ export const handleMessage = async (message: ExtensionMessage): Promise<Result<u
 export const installMessageHandler = (): void => {
   chrome.runtime.onMessage.addListener((value: unknown, _sender, sendResponse) => {
     if (!unknownMessage(value)) {
-      sendResponse(failure("UNKNOWN", "TabShelf received an invalid request."));
+      sendResponse(failure("UNKNOWN", "Tuck received an invalid request."));
       return;
     }
     void handleMessage(value as ExtensionMessage).then(sendResponse, () =>
-      sendResponse(failure("UNKNOWN", "TabShelf could not complete that request.")),
+      sendResponse(failure("UNKNOWN", "Tuck could not complete that request.")),
     );
     return true;
   });

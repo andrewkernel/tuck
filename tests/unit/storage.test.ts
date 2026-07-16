@@ -11,34 +11,25 @@ describe("storage validation", () => {
   it("rejects invalid JSON", () => {
     expect(parseImport("not json")).toEqual(expect.objectContaining({ ok: false }));
   });
-  it("migrates version 1 local data without enabling Tuck Sense", () => {
+  it("migrates older local data after removing Tuck Sense", () => {
+    const legacy = createDefaultRoot() as unknown as Record<string, unknown>;
+    legacy.version = 3;
+    legacy.tuckSense = { enabled: true, feedback: [] };
+    const result = parseImport(JSON.stringify(legacy));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.version).toBe(4);
+      expect("tuckSense" in result.data).toBe(false);
+    }
+  });
+  it("migrates version 1 local data without adding AI state", () => {
     const legacy = createDefaultRoot() as unknown as Record<string, unknown>;
     legacy.version = 1;
-    delete legacy.tuckSense;
     const result = parseImport(JSON.stringify(legacy));
-    expect(result).toEqual(
-      expect.objectContaining({
-        ok: true,
-        data: expect.objectContaining({
-          version: 3,
-          tuckSense: expect.objectContaining({ enabled: false, feedback: [] }),
-        }),
-      }),
-    );
-  });
-  it("migrates Tuck Sense version 2 data with empty local feedback", () => {
-    const legacy = createDefaultRoot() as unknown as Record<string, unknown>;
-    legacy.version = 2;
-    legacy.tuckSense = { enabled: true };
-    const result = parseImport(JSON.stringify(legacy));
-    expect(result).toEqual(
-      expect.objectContaining({
-        ok: true,
-        data: expect.objectContaining({
-          version: 3,
-          tuckSense: expect.objectContaining({ enabled: true, feedback: [] }),
-        }),
-      }),
-    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.version).toBe(4);
+      expect("tuckSense" in result.data).toBe(false);
+    }
   });
 });

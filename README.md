@@ -1,8 +1,8 @@
-# TabShelf
+# Tuck
 
-TabShelf is a local-first Chrome side-panel extension that makes tab cleanup safe, reversible, and fast. It keeps useful links and snippets at hand without turning the browser into another dashboard.
+Tuck is a local-first Chrome side-panel extension that makes tab cleanup safe, reversible, and fast. It keeps useful links and snippets at hand without turning the browser into another dashboard.
 
-![TabShelf product demo](assets/demo/tabshelf-demo-preview.png)
+![Tuck product demo](assets/demo/tabshelf-demo-preview.png)
 
 [Watch the 17-second product demo](assets/demo/tabshelf-demo.webm)
 
@@ -13,12 +13,11 @@ TabShelf is a local-first Chrome side-panel extension that makes tab cleanup saf
 - **Quick recovery.** Search, restore, or delete archived tabs from the side panel.
 - **Useful saved items.** Keep domain-aware links and snippets. Correct values inline and choose Copy, Open, or Edit as the primary action.
 - **Tuck tab grouping.** Select **Group tabs** to collect matching ungrouped site tabs into native Chrome tab groups named `Tuck`. It never closes, merges, or changes existing groups.
-- **Tuck Sense (opt-in).** Search starts with local title, URL, domain, and approved-note matches; on supported Chrome devices, the browser's on-device model reranks only those candidates. It can also propose project groups and archive reviews. Suggestions are validated locally and require a separate action to group or archive anything.
 - **Local and customizable.** Use accessible themes, custom theme validation, protected domains, and JSON export/import. No account required.
 
 ## Privacy
 
-TabShelf has no account, backend, analytics, cloud sync, page-content scraping, cookies, tokens, or saved form values. Your archive, notes, preferences, and exports stay on your device. Tuck Sense uses Chrome's on-device model; saved note values are excluded unless you explicitly include them for that analysis.
+Tuck has no account, backend, analytics, cloud sync, page-content scraping, cookies, tokens, or saved form values. Your archive, notes, preferences, and exports stay on your device.
 
 ## Install locally
 
@@ -26,15 +25,13 @@ TabShelf has no account, backend, analytics, cloud sync, page-content scraping, 
 2. Run `pnpm build`.
 3. Open `chrome://extensions`, enable **Developer mode**, then choose **Load unpacked**.
 4. Select the generated `dist` directory.
-5. Pin TabShelf if desired, then open its side panel from the extension action.
+5. Pin Tuck if desired, then open its side panel from the extension action.
 
-TabShelf targets Chrome 116 or later.
-
-Tuck Sense is optional and needs Chrome 148+ on a [supported desktop device](https://developer.chrome.com/docs/ai/prompt-api). Chrome may download its on-device model the first time you use it; TabShelf does not send tab metadata to a server.
+Tuck targets Chrome 116 or later.
 
 ## How tab safety works
 
-For every archive-and-close operation, TabShelf validates the tab again immediately before acting. It builds the archive record, writes it locally, confirms the saved record, and only then calls `chrome.tabs.remove`. If saving fails, the tab is not closed and the side panel reports the error.
+For every archive-and-close operation, Tuck validates the tab again immediately before acting. It builds the archive record, writes it locally, confirms the saved record, and only then calls `chrome.tabs.remove`. If saving fails, the tab is not closed and the side panel reports the error.
 
 Protected tabs, protected domains, active tabs, pinned tabs (when enabled), audible tabs (when enabled), internal URLs, malformed URLs, and excluded incognito tabs are never eligible for automatic cleanup.
 
@@ -65,4 +62,3 @@ pnpm build
 - [Launch-ready LinkedIn post](docs/LINKEDIN_LAUNCH_POST.md)
 - [Product demo video](assets/demo/tabshelf-demo.webm)
 - [UI stack decision](docs/UI_STACK.md)
-- [Tuck Sense privacy and safety design](docs/TUCK_SENSE.md)

@@ -1,6 +1,6 @@
-# TabShelf launch post
+# Tuck launch post
 
-I built **TabShelf** because closing tabs should never feel risky.
+I built **Tuck** because closing tabs should never feel risky.
 
 It is a local-first Chrome side panel that helps clear browser clutter while keeping the information behind every tab recoverable.
 
@@ -10,8 +10,7 @@ What it does:
 - Keeps active, pinned, audible, protected, and unsafe tabs out of automatic cleanup
 - Restores archived tabs in one click
 - Keeps reusable links and snippets tied to the sites where they matter
-- Groups related browser tabs into native Chrome tab groups with one **Group tabs** action
-- Includes an opt-in on-device **Tuck Sense** feature that proposes project groups and safe tab reviews without sending browsing data to a backend
+- Groups related browser tabs into native Chrome tab groups with one user-triggered **Group tabs** action
 
 The most important detail is the safety rule: if the archive cannot be saved, the tab does not close.
 

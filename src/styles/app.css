@@ -200,40 +200,10 @@ summary:focus-visible {
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
 }
-.tuck-sense .section-detail {
-  padding-bottom: 8px;
-}
-.tuck-sense-note-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 16px 10px;
-  color: var(--text);
-  font-size: 12px;
-}
-.tuck-sense-note-option input {
-  width: 16px;
-  min-height: 16px;
-  accent-color: var(--accent);
-}
-.tuck-sense-actions {
-  padding: 0 16px 10px;
-}
-.tuck-sense-search {
-  padding-top: 0;
-  border-top: 1px solid var(--border);
-}
 .inline-search {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 6px;
-}
-.tuck-sense-result {
-  border-top: 1px solid var(--border);
-}
-.tuck-sense-result .row-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 .search label,
 label {

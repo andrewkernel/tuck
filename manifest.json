@@ -1,18 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "TabShelf",
+  "name": "Tuck",
   "version": "1.0.0",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqSG+tGPCOSko4jbxQnFLj5cufzTx5Sj4tf3rP6UC3OM6K6fxU4eK/POw/REL/PvHsPWlbtYgijPlObkzOlQPIMKjw6Frd9Vwdtofkza4kPRomjZjzk3yRmIscxvP4VRKi+6q74f+D3/o9LjO2i9HGFi8hGPaly3PXzFJd8sj0DRXYnmcWtLw6ij1n/fZjMRvhL5tUmKB//tQtygUzqHBcxrr6BRdye5xJlh8Tp11fz2UFtJ/ngfYJKeSOdICDTYiEu0ACCBbMZWAYM5g4udOVAQmqK8exWbwJa9U3R94PGeHNlinWsXYQFOEYxBOI5M/4KDkzKrOQJDJMBrOINmddQIDAQAB",
   "description": "Safely archive inactive tabs and keep reusable notes close at hand.",
   "minimum_chrome_version": "116",
   "permissions": ["tabs", "storage", "alarms", "sidePanel", "contextMenus", "tabGroups"],
   "background": { "service_worker": "background/service-worker.js", "type": "module" },
-  "action": { "default_title": "Open TabShelf", "default_icon": "icons/icon.svg" },
+  "action": { "default_title": "Open Tuck", "default_icon": "icons/icon.svg" },
   "side_panel": { "default_path": "sidepanel/index.html" },
   "commands": {
     "open-tabshelf": {
       "suggested_key": { "default": "Ctrl+Shift+Y", "mac": "MacCtrl+Shift+Y" },
-      "description": "Open TabShelf"
+      "description": "Open Tuck"
     }
   },
   "icons": { "128": "icons/icon.svg" }

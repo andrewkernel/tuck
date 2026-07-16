@@ -22,7 +22,7 @@ const bootstrap = async (): Promise<void> => {
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create({
     id: "tabshelf-save-selection",
-    title: "Save selection to TabShelf",
+    title: "Save selection to Tuck",
     contexts: ["selection"],
   });
 };

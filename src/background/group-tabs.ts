@@ -45,7 +45,7 @@ export const groupRelatedTabs = async (
   } catch {
     return {
       ok: false,
-      error: { code: "UNKNOWN", message: "TabShelf could not organize these tabs." },
+      error: { code: "UNKNOWN", message: "Tuck could not organize these tabs." },
     };
   }
 };
@@ -96,7 +96,7 @@ export const groupSuggestedTabs = async (
   } catch {
     return {
       ok: false,
-      error: { code: "UNKNOWN", message: "TabShelf could not create this suggested group." },
+      error: { code: "UNKNOWN", message: "Tuck could not create this suggested group." },
     };
   }
 };

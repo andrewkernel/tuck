@@ -9,7 +9,7 @@ export const parseImport = (text: string): Result<StorageRoot> => {
     if (!parsed)
       return {
         ok: false,
-        error: { code: "IMPORT_INVALID", message: "This file is not valid TabShelf data." },
+        error: { code: "IMPORT_INVALID", message: "This file is not valid Tuck data." },
       };
     return { ok: true, data: parsed };
   } catch {

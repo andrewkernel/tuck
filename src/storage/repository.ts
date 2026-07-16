@@ -6,7 +6,6 @@ import type {
   Result,
   SavedNote,
   StorageRoot,
-  TuckSenseState,
 } from "../domain/types";
 import { createId } from "../shared/ids";
 import { migrateRoot } from "./migrations";
@@ -26,13 +25,13 @@ async function readUnchecked(): Promise<Result<StorageRoot>> {
     if (!root)
       return error(
         "STORAGE_READ_FAILED",
-        "Stored TabShelf data is invalid. Export any recoverable data before resetting it.",
+        "Stored Tuck data is invalid. Export any recoverable data before resetting it.",
       );
     return { ok: true, data: root };
   } catch {
     return error(
       "STORAGE_READ_FAILED",
-      "TabShelf could not read local data. Your tabs were not changed.",
+      "Tuck could not read local data. Your tabs were not changed.",
     );
   }
 }
@@ -51,7 +50,7 @@ export const repository = {
       if (!parsed.success)
         return error<StorageRoot>(
           "STORAGE_WRITE_FAILED",
-          "TabShelf refused to save invalid local data. Your existing data is safe.",
+          "Tuck refused to save invalid local data. Your existing data is safe.",
         );
       try {
         await chrome.storage.local.set({ [ROOT_KEY]: parsed.data });
@@ -59,14 +58,14 @@ export const repository = {
         if (!confirmation.ok || JSON.stringify(confirmation.data) !== JSON.stringify(parsed.data)) {
           return error<StorageRoot>(
             "STORAGE_WRITE_FAILED",
-            "TabShelf could not confirm the local save. The tab was not closed.",
+            "Tuck could not confirm the local save. The tab was not closed.",
           );
         }
         return confirmation;
       } catch {
         return error<StorageRoot>(
           "STORAGE_WRITE_FAILED",
-          "TabShelf could not save local data. The tab was not closed.",
+          "Tuck could not save local data. The tab was not closed.",
         );
       }
     });
@@ -80,7 +79,7 @@ export const repository = {
   async replace(root: StorageRoot): Promise<Result<StorageRoot>> {
     const parsed = storageRootSchema.safeParse(root);
     if (!parsed.success)
-      return error("STORAGE_WRITE_FAILED", "Imported data is not valid TabShelf data.");
+      return error("STORAGE_WRITE_FAILED", "Imported data is not valid Tuck data.");
     return this.update(() => parsed.data);
   },
 
@@ -120,13 +119,6 @@ export const repository = {
         theme: patch.theme ?? root.settings.theme,
         customThemes: patch.customThemes ?? root.settings.customThemes,
       },
-    }));
-  },
-
-  updateTuckSense(patch: Partial<TuckSenseState>) {
-    return this.update((root) => ({
-      ...root,
-      tuckSense: { ...root.tuckSense, ...patch },
     }));
   },
 

@@ -1,6 +1,6 @@
-# TabShelf — Product and Interface Design
+# Tuck — Product and Interface Design
 
-TabShelf is a local-first Chrome extension that reduces tab overload without making users feel that information has been lost.
+Tuck is a local-first Chrome extension that reduces tab overload without making users feel that information has been lost.
 
 It has two jobs:
 
@@ -46,7 +46,7 @@ Use `chrome.storage.local` for durable extension data. Settings may use `chrome.
 
 ### Quiet automation
 
-TabShelf should work without interrupting browsing.
+Tuck should work without interrupting browsing.
 
 It must not:
 
@@ -93,7 +93,7 @@ Use text tabs with an underline or bottom border. Do not use pill navigation.
 
 A fixed 52px toolbar:
 
-- Left: TabShelf wordmark
+- Left: Tuck wordmark
 - Right: `Clean now` button
 - Optional icon-only overflow menu
 
@@ -568,7 +568,7 @@ The accent is warm and muted rather than bright blue.
 
 ```text
 ┌─────────────────────────────────────┐
-│ TabShelf                  Clean now │
+│ Tuck                      Clean now │
 ├─────────────────────────────────────┤
 │ Tabs          Notes       Settings  │
 │ ━━━                                 │
@@ -650,7 +650,7 @@ Theme previews must use the actual list-row and button components, not decorativ
 
 ## 10. Keyboard behavior
 
-- `Ctrl/Cmd + Shift + Y`: open or focus TabShelf
+- `Ctrl/Cmd + Shift + Y`: open or focus Tuck
 - `/`: focus search when not editing
 - `Arrow Up/Down`: move through rows
 - `Enter`: open or restore selected item
@@ -672,7 +672,7 @@ Good:
 
 ```text
 No archived tabs.
-Tabs closed by TabShelf will appear here.
+Tabs closed by Tuck will appear here.
 ```
 
 Bad:
@@ -685,7 +685,7 @@ Enjoy the calm.
 Storage error:
 
 ```text
-This tab was not closed because TabShelf could not save it.
+This tab was not closed because Tuck could not save it.
 Try again or export your data from Settings.
 ```
 

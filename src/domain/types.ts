@@ -93,50 +93,6 @@ export type CleanupLogEntry = {
   detail: string;
 };
 
-export type TuckSenseTabContext = {
-  id: number;
-  windowId: number;
-  title: string;
-  url: string;
-  domain: string;
-  unusedMinutes: number;
-  archiveEligible: boolean;
-};
-
-export type TuckSenseGroup = {
-  label: string;
-  reason: string;
-  tabIds: number[];
-};
-
-export type TuckSenseArchiveSuggestion = {
-  tabId: number;
-  title: string;
-  domain: string;
-  kind: "duplicate" | "stale";
-  reason: string;
-};
-
-export type TuckSenseAnalysis = {
-  generatedAt: number;
-  summary: string;
-  groups: TuckSenseGroup[];
-  archiveSuggestions: TuckSenseArchiveSuggestion[];
-};
-
-export type TuckSenseFeedback = {
-  query: string;
-  tabId: number;
-  relevance: "relevant" | "not-relevant";
-  updatedAt: number;
-};
-
-export type TuckSenseState = {
-  enabled: boolean;
-  lastAnalysis?: TuckSenseAnalysis;
-  feedback: TuckSenseFeedback[];
-};
-
 export type StorageRoot = {
   version: number;
   archivedTabs: ArchivedTab[];
@@ -144,10 +100,9 @@ export type StorageRoot = {
   protectedTabs: ProtectedTab[];
   settings: ExtensionSettings;
   cleanupLog: CleanupLogEntry[];
-  tuckSense: TuckSenseState;
 };
 
-export type TabShelfErrorCode =
+export type TuckErrorCode =
   | "TAB_NOT_FOUND"
   | "TAB_INELIGIBLE"
   | "INVALID_URL"
@@ -158,5 +113,5 @@ export type TabShelfErrorCode =
   | "IMPORT_INVALID"
   | "UNKNOWN";
 
-export type TabShelfError = { code: TabShelfErrorCode; message: string };
-export type Result<T> = { ok: true; data: T } | { ok: false; error: TabShelfError };
+export type TuckError = { code: TuckErrorCode; message: string };
+export type Result<T> = { ok: true; data: T } | { ok: false; error: TuckError };
