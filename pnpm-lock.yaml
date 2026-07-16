@@ -32,6 +32,9 @@ importers:
       "@types/chrome":
         specifier: ^0.0.322
         version: 0.0.322
+      "@types/dom-chromium-ai":
+        specifier: ^0.0.17
+        version: 0.0.17
       "@types/node":
         specifier: ^22.15.18
         version: 22.20.1
@@ -1113,6 +1116,12 @@ packages:
     resolution:
       {
         integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==,
+      }
+
+  "@types/dom-chromium-ai@0.0.17":
+    resolution:
+      {
+        integrity: sha512-UnSAIVKONaY2vTAM4TkPpwdKeGgg3tPCwNP3KxR+U8bLYC2rQU7UrgW9LIVx0B02dKZxuPA6a0Q5wvyW5Rk6nw==,
       }
 
   "@types/estree@1.0.9":
@@ -3253,6 +3262,8 @@ snapshots:
       "@types/har-format": 1.2.16
 
   "@types/deep-eql@4.0.2": {}
+
+  "@types/dom-chromium-ai@0.0.17": {}
 
   "@types/estree@1.0.9": {}
 

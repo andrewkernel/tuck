@@ -29,6 +29,7 @@ import { DEFAULT_THEME_TOKENS } from "../storage/schema";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { EmptyState } from "./components/EmptyState";
 import { NoteRow } from "./components/NoteRow";
+import { TuckSensePanel } from "./components/TuckSensePanel";
 import { send } from "./api";
 import { applyTheme, resolveTheme, THEME_PRESETS, validateTheme } from "./theme";
 
@@ -245,6 +246,19 @@ export function App() {
                   ),
               })
             }
+            tuckSense={
+              <TuckSensePanel
+                root={root}
+                onArchive={(tabId) =>
+                  void after(
+                    send<ArchivedTab>({ type: "ARCHIVE_TAB", tabId }),
+                    "Tab archived before closing.",
+                  )
+                }
+                onStatus={status}
+                onRefresh={refresh}
+              />
+            }
           />
         )}
         {view === "notes" && (
@@ -379,6 +393,7 @@ function TabsView({
   onProtect,
   onRestore,
   onDeleteArchive,
+  tuckSense,
 }: {
   search: string;
   setSearch: (value: string) => void;
@@ -396,6 +411,7 @@ function TabsView({
   onProtect: (tabId: number) => void;
   onRestore: (archiveId: string, background: boolean) => void;
   onDeleteArchive: (archive: ArchivedTab) => void;
+  tuckSense: React.ReactNode;
 }) {
   return (
     <>
@@ -409,6 +425,7 @@ function TabsView({
           placeholder="Search archived tabs"
         />
       </div>
+      {tuckSense}
       <section className="section">
         <h2>Current site</h2>
         {hostname ? (

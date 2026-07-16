@@ -6,6 +6,7 @@ import type {
   Result,
   SavedNote,
   StorageRoot,
+  TuckSenseState,
 } from "../domain/types";
 import { createId } from "../shared/ids";
 import { migrateRoot } from "./migrations";
@@ -119,6 +120,13 @@ export const repository = {
         theme: patch.theme ?? root.settings.theme,
         customThemes: patch.customThemes ?? root.settings.customThemes,
       },
+    }));
+  },
+
+  updateTuckSense(patch: Partial<TuckSenseState>) {
+    return this.update((root) => ({
+      ...root,
+      tuckSense: { ...root.tuckSense, ...patch },
     }));
   },
 

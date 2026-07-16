@@ -1,10 +1,16 @@
-import type { ExtensionSettings, Result, SavedNote } from "../domain/types";
+import type {
+  ExtensionSettings,
+  Result,
+  SavedNote,
+  TuckSenseState,
+  TuckSenseTabContext,
+} from "../domain/types";
 import { createId } from "../shared/ids";
 import { getHostname, normalizeUrl } from "../shared/urls";
 import { exportRoot, parseImport } from "../storage/export-import";
 import { repository } from "../storage/repository";
 import { archiveAndCloseTab, runCleanup } from "./cleanup";
-import { groupRelatedTabs } from "./group-tabs";
+import { groupRelatedTabs, groupSuggestedTabs } from "./group-tabs";
 import { getEligibility } from "./eligibility";
 
 export type OpenTabCandidate = {
@@ -22,8 +28,10 @@ export type ExtensionMessage =
   | { type: "GET_ROOT" }
   | { type: "GET_ACTIVE_CONTEXT" }
   | { type: "GET_OPEN_TABS" }
+  | { type: "GET_TUCK_SENSE_CONTEXT" }
   | { type: "RUN_CLEANUP" }
   | { type: "AUTO_GROUP_TABS" }
+  | { type: "GROUP_SUGGESTED_TABS"; tabIds: number[]; label: string }
   | { type: "ARCHIVE_TAB"; tabId: number }
   | { type: "PROTECT_TAB"; tabId: number; duration: "hour" | "day" | "forever" }
   | { type: "RESTORE_ARCHIVE"; archiveId: string; background?: boolean }
@@ -33,6 +41,7 @@ export type ExtensionMessage =
   | { type: "COPY_NOTE"; noteId: string }
   | { type: "OPEN_NOTE"; noteId: string }
   | { type: "UPDATE_SETTINGS"; patch: Partial<ExtensionSettings> }
+  | { type: "UPDATE_TUCK_SENSE"; patch: Partial<TuckSenseState> }
   | { type: "IMPORT_ROOT"; text: string }
   | { type: "EXPORT_ROOT" };
 
@@ -96,6 +105,55 @@ const getOpenTabs = async (): Promise<Result<OpenTabCandidate[]>> => {
     };
   } catch {
     return failure("UNKNOWN", "TabShelf could not read open tabs.");
+  }
+};
+
+const getTuckSenseContext = async (): Promise<Result<TuckSenseTabContext[]>> => {
+  const root = await repository.getRoot();
+  if (!root.ok) return root;
+  try {
+    const query: chrome.tabs.QueryInfo = root.data.settings.includeAllWindows
+      ? {}
+      : { currentWindow: true };
+    const now = Date.now();
+    const tabs = await chrome.tabs.query(query);
+    return {
+      ok: true,
+      data: tabs.flatMap((tab): TuckSenseTabContext[] => {
+        if (
+          tab.id === undefined ||
+          tab.windowId === undefined ||
+          !tab.url ||
+          !normalizeUrl(tab.url) ||
+          tab.incognito ||
+          tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE
+        )
+          return [];
+        const domain = getHostname(tab.url);
+        if (!domain) return [];
+        const archiveEligibility = getEligibility(
+          tab,
+          root.data.settings,
+          root.data.protectedTabs,
+          root.data.settings.archiveAfterMinutes,
+          new Set(),
+          now,
+        );
+        return [
+          {
+            id: tab.id,
+            windowId: tab.windowId,
+            title: tab.title || domain,
+            url: tab.url,
+            domain,
+            unusedMinutes: Math.max(0, Math.floor((now - (tab.lastAccessed ?? now)) / 60_000)),
+            archiveEligible: archiveEligibility.eligible,
+          },
+        ];
+      }),
+    };
+  } catch {
+    return failure("UNKNOWN", "TabShelf could not prepare tabs for Tuck Sense.");
   }
 };
 
@@ -167,12 +225,16 @@ export const handleMessage = async (message: ExtensionMessage): Promise<Result<u
       return getActiveContext();
     case "GET_OPEN_TABS":
       return getOpenTabs();
+    case "GET_TUCK_SENSE_CONTEXT":
+      return getTuckSenseContext();
     case "RUN_CLEANUP":
       return runCleanup();
     case "AUTO_GROUP_TABS": {
       const root = await repository.getRoot();
       return root.ok ? groupRelatedTabs(root.data.settings.includeAllWindows) : root;
     }
+    case "GROUP_SUGGESTED_TABS":
+      return groupSuggestedTabs(message.tabIds, message.label);
     case "ARCHIVE_TAB":
       return archiveAndCloseTab(message.tabId);
     case "PROTECT_TAB": {
@@ -197,6 +259,8 @@ export const handleMessage = async (message: ExtensionMessage): Promise<Result<u
       return openNote(message.noteId);
     case "UPDATE_SETTINGS":
       return repository.updateSettings(message.patch);
+    case "UPDATE_TUCK_SENSE":
+      return repository.updateTuckSense(message.patch);
     case "EXPORT_ROOT": {
       const root = await repository.getRoot();
       return root.ok ? { ok: true, data: exportRoot(root.data) } : root;

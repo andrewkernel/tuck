@@ -93,6 +93,42 @@ export type CleanupLogEntry = {
   detail: string;
 };
 
+export type TuckSenseTabContext = {
+  id: number;
+  windowId: number;
+  title: string;
+  url: string;
+  domain: string;
+  unusedMinutes: number;
+  archiveEligible: boolean;
+};
+
+export type TuckSenseGroup = {
+  label: string;
+  reason: string;
+  tabIds: number[];
+};
+
+export type TuckSenseArchiveSuggestion = {
+  tabId: number;
+  title: string;
+  domain: string;
+  kind: "duplicate" | "stale";
+  reason: string;
+};
+
+export type TuckSenseAnalysis = {
+  generatedAt: number;
+  summary: string;
+  groups: TuckSenseGroup[];
+  archiveSuggestions: TuckSenseArchiveSuggestion[];
+};
+
+export type TuckSenseState = {
+  enabled: boolean;
+  lastAnalysis?: TuckSenseAnalysis;
+};
+
 export type StorageRoot = {
   version: number;
   archivedTabs: ArchivedTab[];
@@ -100,6 +136,7 @@ export type StorageRoot = {
   protectedTabs: ProtectedTab[];
   settings: ExtensionSettings;
   cleanupLog: CleanupLogEntry[];
+  tuckSense: TuckSenseState;
 };
 
 export type TabShelfErrorCode =

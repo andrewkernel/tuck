@@ -11,6 +11,7 @@ What it does:
 - Restores archived tabs in one click
 - Keeps reusable links and snippets tied to the sites where they matter
 - Groups related browser tabs into native Chrome tab groups with one **Group tabs** action
+- Includes an opt-in on-device **Tuck Sense** feature that proposes project groups and safe tab reviews without sending browsing data to a backend
 
 The most important detail is the safety rule: if the archive cannot be saved, the tab does not close.
 

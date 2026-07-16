@@ -49,3 +49,54 @@ export const groupRelatedTabs = async (
     };
   }
 };
+
+export const groupSuggestedTabs = async (
+  tabIds: number[],
+  label: string,
+): Promise<Result<{ tabs: number; label: string }>> => {
+  const uniqueIds = [...new Set(tabIds)].filter((id) => Number.isInteger(id) && id >= 0);
+  if (uniqueIds.length < 2)
+    return {
+      ok: false,
+      error: { code: "TAB_INELIGIBLE", message: "A suggested group needs at least two tabs." },
+    };
+  const title = label.trim().slice(0, 48);
+  if (!title)
+    return {
+      ok: false,
+      error: { code: "TAB_INELIGIBLE", message: "This suggested group needs a name." },
+    };
+  try {
+    const tabs = await Promise.all(uniqueIds.map((id) => chrome.tabs.get(id)));
+    const windowId = tabs[0]?.windowId;
+    if (
+      windowId === undefined ||
+      tabs.some(
+        (tab) =>
+          tab.windowId !== windowId ||
+          tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE ||
+          !tab.url ||
+          !normalizeUrl(tab.url),
+      )
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "TAB_INELIGIBLE",
+          message: "These tabs changed and can no longer be grouped together.",
+        },
+      };
+    }
+    const groupId = await chrome.tabs.group({
+      tabIds: uniqueIds as [number, ...number[]],
+      createProperties: { windowId },
+    });
+    await chrome.tabGroups.update(groupId, { title, color: "grey", collapsed: false });
+    return { ok: true, data: { tabs: uniqueIds.length, label: title } };
+  } catch {
+    return {
+      ok: false,
+      error: { code: "UNKNOWN", message: "TabShelf could not create this suggested group." },
+    };
+  }
+};

@@ -30,6 +30,7 @@ test("the packed extension loads its side panel", async () => {
     await page.goto(`chrome-extension://${extension?.id}/sidepanel/index.html`);
     await expect(page.getByRole("main", { name: "TabShelf" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Clean now" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Turn on" })).toBeVisible();
   } finally {
     await context.close();
   }

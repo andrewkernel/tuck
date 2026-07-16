@@ -13,11 +13,12 @@ TabShelf is a local-first Chrome side-panel extension that makes tab cleanup saf
 - **Quick recovery.** Search, restore, or delete archived tabs from the side panel.
 - **Useful saved items.** Keep domain-aware links and snippets. Correct values inline and choose Copy, Open, or Edit as the primary action.
 - **Tuck tab grouping.** Select **Group tabs** to collect matching ungrouped site tabs into native Chrome tab groups named `Tuck`. It never closes, merges, or changes existing groups.
+- **Tuck Sense (opt-in).** On supported Chrome devices, use the browser's on-device model to propose project groups, archive reviews, and natural-language tab search. Suggestions are validated locally and require a separate action to group or archive anything.
 - **Local and customizable.** Use accessible themes, custom theme validation, protected domains, and JSON export/import. No account required.
 
 ## Privacy
 
-TabShelf has no account, backend, analytics, cloud sync, page-content scraping, cookies, tokens, or saved form values. Your archive, notes, preferences, and exports stay on your device.
+TabShelf has no account, backend, analytics, cloud sync, page-content scraping, cookies, tokens, or saved form values. Your archive, notes, preferences, and exports stay on your device. Tuck Sense uses Chrome's on-device model; saved note values are excluded unless you explicitly include them for that analysis.
 
 ## Install locally
 
@@ -28,6 +29,8 @@ TabShelf has no account, backend, analytics, cloud sync, page-content scraping, 
 5. Pin TabShelf if desired, then open its side panel from the extension action.
 
 TabShelf targets Chrome 116 or later.
+
+Tuck Sense is optional and needs Chrome 148+ on a [supported desktop device](https://developer.chrome.com/docs/ai/prompt-api). Chrome may download its on-device model the first time you use it; TabShelf does not send tab metadata to a server.
 
 ## How tab safety works
 
@@ -62,3 +65,4 @@ pnpm build
 - [Launch-ready LinkedIn post](docs/LINKEDIN_LAUNCH_POST.md)
 - [Product demo video](assets/demo/tabshelf-demo.webm)
 - [UI stack decision](docs/UI_STACK.md)
+- [Tuck Sense privacy and safety design](docs/TUCK_SENSE.md)
